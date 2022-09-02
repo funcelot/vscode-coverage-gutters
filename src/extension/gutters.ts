@@ -1,9 +1,9 @@
+import { commands, extensions } from "vscode";
 import { OutputChannel, window } from "vscode";
 import { Coverage } from "../coverage-system/coverage";
 import { CoverageService } from "../coverage-system/coverageservice";
 import { Config } from "./config";
 import { StatusBarToggler } from "./statusbartoggler";
-import { PreviewPanel } from "./webview";
 
 export class Gutters {
     private coverage: Coverage;
@@ -38,9 +38,31 @@ export class Gutters {
                 window.showWarningMessage("Could not show Coverage Report file!");
                 return;
             }
-            const previewPanel = new PreviewPanel(pickedReport);
-            await previewPanel.createWebView();
-        } catch (error) {
+
+            // TODO:  Figure out how to convert pickedReport to a workspace relative filename.
+            // Right now the livePreview.start.internalPreview.atFile is called with "false" as
+            // the second parameter.  This means that the file specified has an absolute path.
+            // See the Live Preview extension source code:
+            // https://github.com/microsoft/vscode-livepreview/blob/
+            // 3be1e2eb5c8a7b51aa4a88275ad73bb4d923432b/src/extension.ts#L169
+            const livePreview = extensions.getExtension("ms-vscode.live-server");
+            // is the ext loaded and ready?
+            if (livePreview?.isActive === false) {
+                livePreview.activate().then(
+                    function() {
+                        console.log("Extension activated");
+                        commands.executeCommand("livePreview.start.internalPreview.atFile", pickedReport, false);
+                    },
+                    function() {
+                        console.log("Extension activation failed");
+                    },
+                );
+            } else {
+                commands.executeCommand("livePreview.start.internalPreview.atFile", pickedReport, false);
+            }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
             this.handleError("previewCoverageReport", error);
         }
     }
@@ -48,7 +70,8 @@ export class Gutters {
     public async displayCoverageForActiveFile() {
         try {
             await this.coverageService.displayForFile();
-        } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
             this.handleError("displayCoverageForActiveFile", error);
         }
     }
@@ -57,7 +80,8 @@ export class Gutters {
         try {
             this.statusBar.toggle(true);
             await this.coverageService.watchWorkspace();
-        } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
             this.handleError("watchCoverageAndVisibleEditors", error);
         }
     }
@@ -67,7 +91,8 @@ export class Gutters {
             this.coverageService.removeCoverageForCurrentEditor();
             this.statusBar.toggle(false);
             this.coverageService.dispose();
-        } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
             this.handleError("removeWatch", error);
         }
     }
@@ -75,7 +100,8 @@ export class Gutters {
     public removeCoverageForActiveFile() {
         try {
             this.coverageService.removeCoverageForCurrentEditor();
-        } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
             this.handleError("removeCoverageForActiveFile", error);
         }
     }
@@ -84,7 +110,8 @@ export class Gutters {
         try {
             this.coverageService.dispose();
             this.statusBar.dispose();
-        } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
             this.handleError("dispose", error);
         }
     }

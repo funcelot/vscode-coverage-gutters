@@ -29,7 +29,7 @@ suite("Config Tests", () => {
         sinon.stub(vscode.workspace, "getConfiguration").callsFake(() => {
             return {
                 coverageFileNames: ["test.xml", "lcov.info"],
-                get: (key) => {
+                get: (key: any) => {
                     if (key === "coverageFileNames") {
                         return ["test.xml", "lcov.info"];
                     } else if (key === "showGutterCoverage") {
@@ -56,7 +56,7 @@ suite("Config Tests", () => {
         );
 
         expect(() => {
-            new Config(fakeContext); // tslint:disable-line
+            new Config(fakeContext);
         }).not.to.throw();
     });
 
@@ -88,7 +88,7 @@ suite("Config Tests", () => {
             return {} as vscode.TextEditorDecorationType;
         });
 
-        new Config(fakeContext); // tslint:disable-line
+        new Config(fakeContext);
     });
 
     test("Should set the gutter icon to the provided value if set @unit", () => {
@@ -101,7 +101,7 @@ suite("Config Tests", () => {
             return {} as vscode.TextEditorDecorationType;
         });
 
-        fakeContext.asAbsolutePath = (options) => options;
-        new Config(fakeContext); // tslint:disable-line
+        fakeContext.asAbsolutePath = (options: any) => options;
+        new Config(fakeContext);
     });
 });
